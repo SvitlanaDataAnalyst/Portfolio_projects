@@ -1,4 +1,5 @@
--- Running the database. Reviewing the tables / Démarrage de la base de données. Visualisation des tables
+-- Running the database. Reviewing the tables 
+-- Lancement de la base de données. Visualisation des tables  
 
 USE mis602_ass2;
 show tables;
@@ -10,7 +11,8 @@ SELECT * FROM patient;
 SELECT * FROM prescription;
 SELECT * FROM speciality;
 
--- Data Cleaning / Nettoyage des données
+-- Data Cleaning  
+-- Nettoyage des données  
 
 select trim(name)
 FROM patient;
@@ -24,18 +26,21 @@ ELSE trim(name)
 END as corr_name
 FROM patient;
 
--- Сalculating the age of each patient on the current date / Сalculer l'âge de chaque patient à la date du jour
+-- Calculating the age of each patient on the current date  
+-- Calcul de l'âge de chaque patient à la date actuelle  
 
 select name, dob, timestampdiff(year, dob, now()) as age  FROM patient
 order by name;
  
- -- Сalculating the age of the oldest patient, the youngest patient, the average age of the patient, and the total number of patients. / Сalculer l'âge du patient le plus âgé, du patient le plus jeune, l'âge moyen du patient et le nombre total de patients.
+-- Calculating the age of the oldest patient, the youngest patient, the average age of the patients, and the total number of patients  
+-- Calcul de l'âge du patient le plus âgé, du plus jeune, de l'âge moyen des patients et du nombre total de patients  
  
  SELECT max(timestampdiff(year, dob, now())) as max_age, min(timestampdiff(year, dob, now())) as min_age,
 avg((timestampdiff(year, dob, now()))) as avg_age, count(patient_id) as count_of_patients
 FROM patient;
  
- -- Age analytics (18-35, 36-50, 50+) / Analyse de l'âge (18-35, 36-50, 50+)
+-- Age analytics (18–35, 36–50, 50+)  
+-- Analyse par tranche d’âge (18–35, 36–50, 50+)  
  
  SELECT 
 trim(name) as name, dob, 
@@ -50,7 +55,8 @@ END as age_range
  ORDER BY age_range;
   
  
--- Display a table with the date of the appointment, information about the patient, the doctor receiving the patient, and the status of prescriptions. / Afficher un tableau avec la date du rendez-vous, les informations sur le patient, le médecin qui reçoit le patient et le statut des ordonnances.
+-- Display a table with the appointment date, patient info, attending doctor, and prescription status  
+-- Affichage d’un tableau avec la date du rendez-vous, les informations sur le patient, le médecin traitant et le statut des ordonnances  
  
  select distinct appointment.appointment_id, appointment.appointment_date, trim(patient.name) as patient_name, patient.dob,
  timestampdiff(year, patient.dob, now()) as age, patient.gender, doctor.name as doctor_name, speciality.name as speciality,
@@ -70,7 +76,8 @@ ON prescription.appointment_id = appointment.appointment_id
 Order by appointment.appointment_date
 ;
 
--- Remove duplicate visits from the resulting table / Supprimer les visites en double du tableau résultant
+-- Remove duplicate visits from the resulting table  
+-- Suppression des doublons de visites dans le tableau obtenu  
 
 WITH ranked_appointments AS (
  select distinct appointment.appointment_id, appointment.appointment_date, trim(patient.name) as patient_name, patient.dob,
@@ -99,7 +106,8 @@ SELECT *
 FROM ranked_appointments
 WHERE rn = 1;
 
--- View a patient-specific prescription / Consulter une ordonnance spécifique à un patient
+-- View a patient-specific prescription  
+-- Affichage de l’ordonnance d’un patient spécifique  
 
  select appointment.appointment_date, trim(patient.name) as patient_name, patient.dob,
  timestampdiff(year, patient.dob, now()) as age, patient.gender, doctor.name as doctor_name, speciality.name as speciality,
@@ -123,7 +131,8 @@ AND medication.strength IS NOT NULL
 AND medication.description IS NOT NULL
 Order by appointment.appointment_date;
 
--- Patients without any prescribed medications / Patients à qui aucun médicament n'est prescrit
+-- Patients without any prescribed medications  
+-- Patients sans médicaments prescrits  
 
 select appointment.appointment_id, appointment.appointment_date, patient.name as patient_name,  patient.dob,
  timestampdiff(year, patient.dob, now()) as age, patient.gender, doctor.name as doctor_name, speciality.name as speciality,
@@ -146,16 +155,8 @@ AND medication.strength IS NULL
 AND medication.description IS NULL
 Order by appointment.appointment_date;
 
--- Number of patients without prescriptions / Nombre de patients sans ordonnance
-SELECT count(distinct patient.patient_id) as patients_with_no_prescr from patient
-LEFT JOIN appointment
-On appointment.patient_id=patient.patient_id
-Left join prescription
-ON prescription.appointment_id = appointment.appointment_id 
-Left join medication
-on prescription.medication_id = medication.medication_id
-WHERE medication.medication_id IS NULL
-;
+-- Number of patients without prescriptions  
+-- Nombre de patients sans ordonnance  
 
 SELECT COUNT(*) FROM patient;
 SELECT COUNT(DISTINCT patient.patient_id) AS patients_with_no_prescr
@@ -164,6 +165,9 @@ LEFT JOIN appointment ON appointment.patient_id = patient.patient_id
 LEFT JOIN prescription ON prescription.appointment_id = appointment.appointment_id
 LEFT JOIN medication ON prescription.medication_id = medication.medication_id
 WHERE medication.medication_id IS NULL;
+
+-- General statistics: total patients, with and without prescriptions  
+-- Statistiques générales : nombre total de patients, avec ou sans ordonnance
 
 SELECT
     COUNT(DISTINCT patient.patient_id) AS total_patients,
@@ -174,6 +178,8 @@ LEFT JOIN appointment ON appointment.patient_id = patient.patient_id
 LEFT JOIN prescription ON prescription.appointment_id = appointment.appointment_id
 LEFT JOIN medication ON prescription.medication_id = medication.medication_id;
 
+-- List of patients without any prescriptions  
+-- Liste des patients sans ordonnance
 
 SELECT patient.patient_id, patient.name
 FROM patient
@@ -183,7 +189,8 @@ WHERE patient.patient_id NOT IN (
     JOIN prescription ON prescription.appointment_id = appointment.appointment_id
 );
 
--- A table with information on when the patient was examined by a doctor, and count how many times. / Un tableau contenant des informations sur la date à laquelle le patient a consulté le médecin et le nombre de consultations.
+-- A table showing when the patient saw a doctor and how many times  
+-- Tableau indiquant les dates de consultation du patient et le nombre de visites  
 
 select appointment.appointment_id, appointment.patient_id, patient.patient_id, patient.name, 
 row_number () OVER (Partition by patient.name) as row_num, 
@@ -193,7 +200,8 @@ ON appointment.patient_id = patient.patient_id
 order by patient.name;
 
 
--- Number of appointments with each doctor (how many times a particular doctor has been attended) / Le nombre de rendez-vous avec chaque médecin (combien de fois un médecin particulier a été consulté)
+-- Number of appointments with each doctor  
+-- Nombre de rendez-vous par médecin  
 
 select appointment.appointment_id, appointment.patient_id, doctor.doctor_id, doctor.name, 
 row_number () OVER (Partition by doctor.name) as row_num, 
@@ -202,16 +210,9 @@ join doctor
 ON appointment.doctor_id = doctor.doctor_id
 order by doctor.name;
  
- -- A table with information on which doctors wrote the most prescriptions / Tableau contenant des informations sur les médecins qui ont rédigé le plus grand nombre d'ordonnances
+-- A table with doctors who wrote the most prescriptions  
+-- Tableau des médecins ayant rédigé le plus grand nombre d’ordonnances  
 
- select doctor.doctor_id, doctor.name, prescription.prescription_id,
-count(prescription.prescription_id) over (partition by doctor.doctor_id) as prescr_count FROM appointment
-join doctor
-ON appointment.doctor_id = doctor.doctor_id
-join prescription
-ON prescription.appointment_id = appointment.appointment_id
-;
- 
  WITH doc_prescr_count AS (
   SELECT
     doctor.doctor_id,
@@ -225,7 +226,10 @@ ON prescription.appointment_id = appointment.appointment_id
 SELECT *,
        ROW_NUMBER() OVER (ORDER BY prescr_count DESC) AS _rank
 FROM doc_prescr_count;
- 
+
+-- Number of prescriptions written by each doctor (sorted)
+-- Nombre d’ordonnances rédigées par chaque médecin (trié)
+
  SELECT
   doctor.doctor_id,
   doctor.name AS doctor_name,
@@ -237,8 +241,10 @@ GROUP BY doctor.doctor_id, doctor.name
 ORDER BY prescr_count DESC;
  
  
- -- Table with analysis of the age of patients by appointment / Tableau d'analyse de l'âge des patients par rendez-vous
- SELECT 
+-- Patient age analysis with medication details by appointment
+-- Analyse de l’âge des patients avec les détails des médicaments par rendez-vous
+  
+SELECT 
 trim(patient.name) as patient_name, patient.dob, 
 timestampdiff(year, dob, now()) as age, prescription.medication_id, medication.name, medication.dosage_form, medication.strength, 
 medication.description
@@ -251,8 +257,9 @@ medication.description
  ON medication.medication_id = prescription.medication_id
  ORDER BY age desc;
  
- 
- 
+-- Patient age distribution by medication count
+-- Répartition des patients par tranche d’âge et nombre de médicaments prescrits
+
  SELECT age_range,
  COUNT(*) as medic_count 
  FROM (
@@ -274,7 +281,9 @@ medication.description
  GROUP BY age_range;
  
  
- -- A list of all appointments for a particular patient / Une liste de tous les rendez-vous pour un patient particulier
+-- A list of all appointments for a particular patient  
+-- Liste de tous les rendez-vous d’un patient donné  
+
  SELECT 
 trim(patient.name) as patient_name, patient.dob, 
 timestampdiff(year, dob, now()) as age, prescription.medication_id, medication.name, medication.dosage_form, medication.strength, 
@@ -290,7 +299,9 @@ medication.description
  ORDER BY age desc;
  
  
- -- Top 5 most prescribed medications / Les 5 médicaments les plus prescrits
+-- Top 5 most prescribed medications  
+-- Top 5 des médicaments les plus prescrits  
+
  SELECT medication.medication_id, medication.name, COUNT(medication.medication_id) as med_count
  FROM medication
   JOIN prescription
@@ -299,7 +310,8 @@ medication.description
  ORDER BY med_count desc
  LIMIT 5;
  
- -- Percentage of completed and canceled appointments / Pourcentage de rendez-vous réalisés et annulés
+-- Percentage of completed and canceled appointments  
+-- Pourcentage de rendez-vous effectués et annulés  
  
  SELECT * from appointment;
   
@@ -309,8 +321,9 @@ medication.description
  ROUND (SUM(CASE WHEN status IS NULL THEN 1 else 0 END) / COUNT(*)*100, 2) as per_cent_unknown
   FROM appointment;
  
+-- Number of patients per doctor per week  
+-- Nombre de patients par médecin et par semaine  
 
- -- The number of patients for each doctor by week / Le nombre de patients pour chaque médecin par semaine
  SELECT doctor.doctor_id, doctor.name, 
  YEAR(appointment.appointment_date) as _year,
  WEEK(appointment.appointment_date, 1) as _week,
