@@ -1,5 +1,5 @@
 # Portfolio_projects
-This repository contains code and SQL queries from my portfolio projects. Data sources include Kaggle and other public datasets.
+SQL (MySQL) queries from data analysis projects. Data sources include Kaggle and other public datasets.
 
 # Patient Database Analysis Project
 
